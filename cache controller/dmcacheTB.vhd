@@ -45,7 +45,7 @@ ARCHITECTURE behavior OF dmcacheTB IS
          reset : IN  std_logic;
          WnR : IN  std_logic;
          A : IN  std_logic_vector(7 downto 0);
-         D : IN  std_logic_vector(7 downto 0);
+         D : INOUT  std_logic_vector(7 downto 0);
          hit : OUT  std_logic
         );
     END COMPONENT;
@@ -101,22 +101,23 @@ BEGIN
       -- insert stimulus here 
 
       WnR <= '1';
-      A <= "11111111";
-      D <= "11111111";
+      A <= "10000000";
+      D <= "11111110";
       wait for clk_period*3;
 
 
-      A <= "01000000";
-      D <= "11111111";
+      A <= "01000001";
+      D <= "11111101";
       wait for clk_period*3;
 
 
-      A <= "10000001";
-      D <= "11111111";
+      A <= "10000010";
+      D <= "11111011";
       wait for clk_period*3;
 
       WnR <= '0';    
-      D <= "00000000";
+      D <= "ZZZZZZZZ";
+      --D <= "--------";
       wait for clk_period*3;
 
       -- look at some locations where nothing has been stored to check
@@ -133,14 +134,13 @@ BEGIN
       wait for clk_period*3;
       -- Now look at some locations where something has been stored
 
-
-      A <= "11111111";
+      A <= "10000000";
       wait for clk_period*3;
 
-      A <= "01000000";
+      A <= "01000001";
       wait for clk_period*3;
 
-      A <= "10000001";
+      A <= "10000010";
       wait for clk_period*3;
 
       A <= "00000000";

@@ -46,7 +46,7 @@ entity dmcache is
 		reset: in STD_LOGIC;
 		WnR: in STD_LOGIC;
 		A 	: in  STD_LOGIC_VECTOR (adr_width-1 downto 0);
-		D 	: in  STD_LOGIC_VECTOR (data_width-1 downto 0);
+		D 	: inout  STD_LOGIC_VECTOR (data_width-1 downto 0);
 		hit: out  STD_LOGIC);		 
 	
 end dmcache;
@@ -58,6 +58,7 @@ architecture Behavioral of dmcache is
 	
 	signal stored_tag : std_logic_vector(tag_width-1 downto 0);
 	signal stored_word : std_logic_vector(data_width-1 downto 0);
+	signal word_in		: std_logic_vector(data_width-1 downto 0);
 	
 	component cache_mem is
 	  generic (
@@ -76,17 +77,9 @@ architecture Behavioral of dmcache is
 	end component;
 	
 begin
-
-	--debug
-	--tag_comparator: process (WnR)
-	--begin
-	--	if (WnR = '0') then
-	--		hit <= '1';
-	--	else
-	--		hit <= '0';
-	--	end if;
-	--end process;
-
+	-- Make comparitor act on clock edges?
+			-- pretty much does as the stored tag isn't updated
+			-- until then anyway
 	tag_comparator: process(tag_address, stored_tag)
 	begin
 		if (tag_address = stored_tag) then
@@ -107,7 +100,7 @@ begin
 	port map
 	(
 		DataInEnable => WnR,
-		DataIn => D,
+		DataIn => word_in,
 		Address => line_index,
 		DataOut => stored_word, 
 		clock => clk,
@@ -131,6 +124,16 @@ begin
 		reset => reset
 	);	
 
+	--control bidir data buss
+	process (WnR, D, A, clk)
+	begin
+		if (WnR = '1') then
+			D <= (others => 'Z'); -- disable output
+		else
+			D <= stored_word;     -- output stored word
+		end if;
+		word_in <= D;
+	end process;
 
 
 
