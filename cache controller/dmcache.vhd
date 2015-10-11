@@ -17,6 +17,17 @@
 -- Additional Comments: 
 --
 ----------------------------------------------------------------------------------
+
+
+-- TODOS:
+--  -synchronisation, half a clock cycle is needed to load a memory address
+-- 	-Main memory - look aside or look through
+--  -UART interface
+--  
+--
+--
+
+
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
 
@@ -32,9 +43,9 @@ use IEEE.STD_LOGIC_1164.ALL;
 entity dmcache is
 	generic (
 		 size			:	integer := 8;  -- number of memory words		 
-		 adr_width	: 		integer := 8;  -- number of address bits
-		 data_width	: 		integer := 8;	 -- number of data bits
-		 witdth		:		integer := 1;	 -- cache line width (data_widths) (currently unused)
+		 adr_width		: 	integer := 8;  -- number of address bits
+		 data_width		: 	integer := 8;	 -- number of data bits
+		 --width		:		integer := 1;	 -- cache line width (data_widths) (currently unused)
 		 
 		 tag_width		:	integer := 2;
 		 index_width	: 	integer := 6;
@@ -47,9 +58,10 @@ entity dmcache is
 		WnR: in STD_LOGIC;
 		A 	: in  STD_LOGIC_VECTOR (adr_width-1 downto 0);
 		D 	: inout  STD_LOGIC_VECTOR (data_width-1 downto 0);
-		hit: out  STD_LOGIC);		 
-	
+		hit: out  STD_LOGIC);		
 end dmcache;
+
+
 
 architecture Behavioral of dmcache is
 	alias tag_address 	is A(adr_width-1 downto offset_width + index_width);
@@ -124,7 +136,9 @@ begin
 		reset => reset
 	);	
 
-	--control bidir data buss
+	-- Proccess takes half a cycle before setting D to stored word. 
+
+	--control bidir data bus
 	process (WnR, D, A, clk)
 	begin
 		if (WnR = '1') then
@@ -134,6 +148,8 @@ begin
 		end if;
 		word_in <= D;
 	end process;
+
+
 
 
 
