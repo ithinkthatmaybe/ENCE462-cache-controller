@@ -21,7 +21,7 @@
 -- Notes: 
 -- This testbench has been automatically generated using types std_logic and
 -- std_logic_vector for the ports of the unit under test.  Xilinx recommends
--- that these types always be used for the top-level I/O of a design in order
+-- that these types always be used for the top-level I/O of cpuAddr design in order
 -- to guarantee that the testbench will bind correctly to the post-implementation 
 -- simulation model.
 --------------------------------------------------------------------------------
@@ -41,49 +41,102 @@ ARCHITECTURE behavior OF dmcacheTB IS
  
     COMPONENT dmcache
     PORT(
-         clk : IN  std_logic;
+         clock : IN  std_logic;
          reset : IN  std_logic;
          WnR : IN  std_logic;
-         A : IN  std_logic_vector(7 downto 0);
-         D : INOUT  std_logic_vector(7 downto 0);
-         hit : OUT  std_logic
+         oE   : IN std_logic;
+         busy : OUT std_logic;
+         cpuAddr : IN  std_logic_vector(7 downto 0);
+         cpuData : INOUT  std_logic_vector(7 downto 0);
+         hit : OUT  std_logic;
+         memAddr : OUT  std_logic_vector(7 downto 0);
+         memData : INOUT  std_logic_vector(7 downto 0);
+         memOE       : out   STD_LOGIC;
+         memnWE      : out   STD_LOGIC;
+         state_out   : Out   std_logic_vector(2 downto 0)
         );
     END COMPONENT;
-    
+
+    --COMPONENT main_mem
+    --generic (
+    --    AddressWidth  : integer := 8;
+    --    WordLength      : integer := 8;
+    --    Size      : integer := 8
+    --);
+    --port (
+    --    nWE                : in std_logic;
+    --    oE              : in std_logic;
+    --    cs              : in std_logic;
+    --    Data            : inout std_logic_vector(WordLength-1 DOWNTO 0);
+    --    Address         : in std_logic_vector(AddressWidth-1 DOWNTO 0);   
+    --    clock           : in std_logic;
+    --    reset           : in std_logic
+    --);
+    --end COMPONENT;
+
 
    --Inputs
-   signal clk : std_logic := '0';
-   signal reset : std_logic := '0';
-   signal WnR : std_logic := '0';
-   signal A : std_logic_vector(7 downto 0) := (others => '0');
+   signal clock     : std_logic := '0';
+   signal reset     : std_logic := '0';
+   signal WnR     : std_logic := '0';
+   signal oE    : std_logic := '0';
+   signal cpuAddr : std_logic_vector(7 downto 0) := (others => '0');   
+   signal memAddr : std_logic_vector(7 downto 0) := (others => '0');
 
 	--BiDirs
-   signal D : std_logic_vector(7 downto 0) := (others => '0');
+   signal cpuData : std_logic_vector(7 downto 0) := (others => '0');
+   signal memData : std_logic_vector(7 downto 0) := (others => '0');
+   
 
  	--Outputs
-   signal hit : std_logic;
+  signal hit  : std_logic;
+  signal busy : std_logic;
+  signal memOE  : std_logic;
+  signal memnWE : std_logic;
+  signal state_out : std_logic_vector(2 downto 0);
 
    -- Clock period definitions
    constant clk_period : time := 10 ns;
  
 BEGIN
- 
+
 	-- Instantiate the Unit Under Test (UUT)
-   uut: dmcache PORT MAP (
-          clk => clk,
+  uut: dmcache PORT MAP (
+          clock => clock,
           reset => reset,
           WnR => WnR,
-          A => A,
-          D => D,
-          hit => hit
-        );
+          oE => oE,
+          busy => busy,
+          cpuAddr => cpuAddr,
+          cpuData => cpuData,
+          hit => hit,
+          memAddr => memAddr,
+          memData => memData,
+          memOE => memOE,
+          memnWE => memnWE,
+          state_out => state_out
+    );
+
+  --MM : main_mem 
+  --port map (
+  --  nWE     => memnWE,
+  --  oE      => memOE,
+  --  cs      => '1',
+  --  Data    => memData,
+  --  Address => memAddr,
+  --  clock   => clock,
+  --  reset   => reset
+  --  );
+
+
+
 
    -- Clock process definitions
-   clk_process :process
+   clk_process : process
    begin
-		clk <= '0';
+		clock <= '1';
 		wait for clk_period/2;
-		clk <= '1';
+		clock <= '0';
 		wait for clk_period/2;
    end process;
  
@@ -99,51 +152,64 @@ BEGIN
       wait for clk_period*3;
 
       -- insert stimulus here 
+      
+
 
       WnR <= '1';
-      A <= "10000000";
-      D <= "11111110";
-      wait for clk_period*3;
+      cpuAddr <= "10001000";
+      cpuData <= "11111110";
+      wait for clk_period*2;
+      WnR <= '0';
 
+      wait for clk_period*4;
 
-      A <= "01000001";
-      D <= "11111101";
-      wait for clk_period*3;
+      WnR <= '1';
+      cpuAddr <= "01000001";
+      cpuData <= "11111101";
+      wait for clk_period*2;
+      WnR <= '0';
 
+      wait for clk_period*4;
 
-      A <= "10000010";
-      D <= "11111011";
-      wait for clk_period*3;
+      WnR <= '1';
+      cpuAddr <= "10000110";
+      cpuData <= "11111011";
+      wait for clk_period*2;
+      WnR <= '0';
 
-      WnR <= '0';    
-      D <= "ZZZZZZZZ";
-      --D <= "--------";
+      wait for clk_period*4;
+
+      WnR <= '0';
+      oE <= '1' ; 
+      cpuData <= "ZZZZZZZZ";
+      --cpuData <= "--------";
       wait for clk_period*3;
 
       -- look at some locations where nothing has been stored to check
       -- that the tag comparator works
 
 
-      A <= "11101111";
-      wait for clk_period*3;
+      cpuAddr <= "11101111";
+      wait for clk_period*6;
 
-      A <= "01001000";
-      wait for clk_period*3; 
+      cpuAddr <= "01001000";
+      wait for clk_period*6; 
 
-      A <= "10000011";
-      wait for clk_period*3;
+      cpuAddr <= "10000011";
+      wait for clk_period*6;
       -- Now look at some locations where something has been stored
 
-      A <= "10000000";
-      wait for clk_period*3;
+      cpuAddr <= "10001000";
+      wait for clk_period*6;
 
-      A <= "01000001";
-      wait for clk_period*3;
+      cpuAddr <= "01000001";
+      wait for clk_period*6;
 
-      A <= "10000010";
-      wait for clk_period*3;
+      cpuAddr <= "10000110";
+      wait for clk_period*6;
 
-      A <= "00000000";
+      oE <= '0';
+      cpuAddr <= "00000000";
 
 
       wait;

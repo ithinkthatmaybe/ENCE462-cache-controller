@@ -35,16 +35,15 @@ USE ieee.math_real.ALL;
 
 entity cache_mem is
   generic (
-	AddressWidth 	: integer := 8;
-    WordLength      : integer := 8;
-	Size			: integer := 8
+	AddressWidth 	 : integer := 8;
+    WordLength       : integer := 8;
+	Size			 : integer := 8
   );
   port (
 	 DataInEnable    : in std_logic;
      DataIn          : in std_logic_vector(WordLength-1 DOWNTO 0);
-	 Address       : in std_logic_vector(AddressWidth-1 DOWNTO 0);
-	 
-	 DataOut        : out std_logic_vector(WordLength-1 DOWNTO 0);
+	 Address         : in std_logic_vector(AddressWidth-1 DOWNTO 0);	 
+	 DataOut         : out std_logic_vector(WordLength-1 DOWNTO 0);
 	 clock           : in std_logic;
 	 reset           : in std_logic
   );
@@ -60,9 +59,9 @@ begin
   MemBlock: process (clock, reset, Address, DataIn, DataInEnable)
     variable counter  : integer;
   begin
-	 if reset = '1' then
-	   for counter in 0 TO Size-1 loop
-		  mem(counter) <= (others => '0');
+	if reset = '1' then
+	    for counter in 0 TO Size-1 loop
+		  mem(counter) <= (others => 'U');
 		end loop;
     elsif clock'event and clock = '1' then
 	   if DataInEnable = '1' then
@@ -70,7 +69,7 @@ begin
 		end if;
 	 end if;
   end process;
-
+  
   DataOut <= mem(to_integer(unsigned(Address)));
   
 end Behavioral;
