@@ -100,8 +100,8 @@ architecture Behavioral of dmcache is
     constant STATE_WRITEBACK : state_type := "100";
 
    --signal state_reg        : state_type;
-   signal state            : state_type := STATE_IDLE;
-   signal state_next       : state_type;
+    signal state            : state_type := STATE_IDLE;
+    signal state_next       : state_type;
 
     alias tag_address   is cpuAddr(addr_width-1 downto offset_width + index_width);
     alias line_index    is cpuAddr(offset_width + index_width-1 downto offset_width);
@@ -147,7 +147,7 @@ begin
             --DataInEnable <= '1';
             --if stored_tag = tag_address then
             --    state_next <= STATE_IDLE;               -- better fetch finishing conditoin than a hit?
-            --else
+            --else                                          -- CANT use hit 
             --    state_next <= STATE_FETCH;
             --end if;
             state_next <= STATE_IDLE;

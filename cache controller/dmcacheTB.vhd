@@ -183,7 +183,7 @@ BEGIN
       oE <= '1' ; 
       cpuData <= "ZZZZZZZZ";
       --cpuData <= "--------";
-      wait for clk_period*3;
+      wait for clk_period*6;
 
       -- look at some locations where nothing has been stored to check
       -- that the tag comparator works
