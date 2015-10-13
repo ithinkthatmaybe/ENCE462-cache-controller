@@ -1,0 +1,5 @@
+net "USB_RS232_TXD" loc = "P9";
+net "USB_RS232_RXD" loc = "U6";
+net "USER_RESET" loc = "B18";
+
+net "CLOCK_Y3" loc = "B8";

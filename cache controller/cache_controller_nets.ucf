@@ -1,0 +1,27 @@
+
+
+#net "BT0" loc = "B18";
+#net "BT1" loc = "D18";
+#net "BT2" loc = "E18";
+#net "BT3" loc = "H13";
+
+
+net "SW0" loc = "G18";
+#net "SW1" loc = "H18";
+#net "SW2" loc = "K18";
+#net "SW3" loc = "K17";
+#net "SW4" loc = "L14";
+#net "SW5" loc = "L13";
+#net "SW6" loc = "N17";
+#net "SW7" loc = "R17";
+
+
+
+net "LD0" loc = "J14";
+#net "LD1" loc = "J15";
+#net "LD2" loc = "K15";
+#net "LD3" loc = "K14";
+#net "LD4" loc = "E17";
+#net "LD5" loc = "P15";
+#net "LD6" loc = "F4";
+#net "LD7" loc = "R4";
