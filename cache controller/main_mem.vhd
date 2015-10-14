@@ -65,7 +65,7 @@ begin
   begin
     if reset = '1' then
      for counter in 0 TO Size-1 loop
-      mem(counter) <= (others => '0');
+      mem(counter) <= (others => '1');
     end loop;
     elsif clock'event and clock = '1' then
         if (cs = '1' and nWE = '0' and OE = '0') then        

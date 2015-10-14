@@ -57,22 +57,22 @@ ARCHITECTURE behavior OF dmcacheTB IS
         );
     END COMPONENT;
 
-    --COMPONENT main_mem
-    --generic (
-    --    AddressWidth  : integer := 8;
-    --    WordLength      : integer := 8;
-    --    Size      : integer := 8
-    --);
-    --port (
-    --    nWE                : in std_logic;
-    --    oE              : in std_logic;
-    --    cs              : in std_logic;
-    --    Data            : inout std_logic_vector(WordLength-1 DOWNTO 0);
-    --    Address         : in std_logic_vector(AddressWidth-1 DOWNTO 0);   
-    --    clock           : in std_logic;
-    --    reset           : in std_logic
-    --);
-    --end COMPONENT;
+    COMPONENT main_mem
+    generic (
+        AddressWidth  : integer := 8;
+        WordLength      : integer := 8;
+        Size      : integer := 8
+    );
+    port (
+        nWE                : in std_logic;
+        oE              : in std_logic;
+        cs              : in std_logic;
+        Data            : inout std_logic_vector(WordLength-1 DOWNTO 0);
+        Address         : in std_logic_vector(AddressWidth-1 DOWNTO 0);   
+        clock           : in std_logic;
+        reset           : in std_logic
+    );
+    end COMPONENT;
 
 
    --Inputs
@@ -117,16 +117,21 @@ BEGIN
           state_out => state_out
     );
 
-  --MM : main_mem 
-  --port map (
-  --  nWE     => memnWE,
-  --  oE      => memOE,
-  --  cs      => '1',
-  --  Data    => memData,
-  --  Address => memAddr,
-  --  clock   => clock,
-  --  reset   => reset
-  --  );
+  MM : main_mem
+  generic map (
+        AddressWidth  => 8,
+        WordLength    => 8,
+        Size      => 2**8
+    )
+  port map (
+    nWE     => memnWE,
+    oE      => memOE,
+    cs      => '1',
+    Data    => memData,
+    Address => memAddr,
+    clock   => clock,
+    reset   => reset
+    );
 
 
 
@@ -156,28 +161,33 @@ BEGIN
 
 
       WnR <= '1';
+
+      --cpuAddr <= "11111111";
+      --cpuAddr <= "00000001";
       cpuAddr <= "10001000";
       cpuData <= "11111110";
       wait for clk_period*2;
       WnR <= '0';
 
-      wait for clk_period*4;
+      wait for clk_period*12;
 
       WnR <= '1';
+      --cpuAddr <= "00000010";
       cpuAddr <= "01000001";
       cpuData <= "11111101";
       wait for clk_period*2;
       WnR <= '0';
 
-      wait for clk_period*4;
+      wait for clk_period*12;
 
       WnR <= '1';
+      --cpuAddr <= "00000011";
       cpuAddr <= "10000110";
       cpuData <= "11111011";
       wait for clk_period*2;
       WnR <= '0';
 
-      wait for clk_period*4;
+      wait for clk_period*12;
 
       WnR <= '0';
       oE <= '1' ; 
@@ -185,28 +195,33 @@ BEGIN
       --cpuData <= "--------";
       wait for clk_period*6;
 
-      -- look at some locations where nothing has been stored to check
-      -- that the tag comparator works
 
+      -- go back and look at the cached locations
 
-      cpuAddr <= "11101111";
-      wait for clk_period*6;
-
-      cpuAddr <= "01001000";
-      wait for clk_period*6; 
-
-      cpuAddr <= "10000011";
-      wait for clk_period*6;
-      -- Now look at some locations where something has been stored
-
+      --cpuAddr <= "00000001";
       cpuAddr <= "10001000";
       wait for clk_period*6;
 
+      --cpuAddr <= "00000010";
       cpuAddr <= "01000001";
       wait for clk_period*6;
 
+      --cpuAddr <= "00000011";
       cpuAddr <= "10000110";
       wait for clk_period*6;
+
+
+
+      -- look at some uncached locations
+
+      cpuAddr <= "11101111";
+      wait for clk_period*12;
+
+      cpuAddr <= "01001000";
+      wait for clk_period*12; 
+
+      cpuAddr <= "10000011";
+      wait for clk_period*12;
 
       oE <= '0';
       cpuAddr <= "00000000";

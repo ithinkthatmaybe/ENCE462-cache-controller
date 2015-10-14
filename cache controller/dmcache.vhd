@@ -103,20 +103,25 @@ architecture Behavioral of dmcache is
     signal state            : state_type := STATE_IDLE;
     signal state_next       : state_type;
 
-    alias tag_address   is cpuAddr(addr_width-1 downto offset_width + index_width);
-    alias line_index    is cpuAddr(offset_width + index_width-1 downto offset_width);
-    alias line_offset   is cpuAddr(offset_width-1 downto 0);
-    
     signal stored_tag   : std_logic_vector(tag_width-1 downto 0);
 
     signal stored_word  : std_logic_vector(data_width-1 downto 0);
     signal word_in      : std_logic_vector(data_width-1 downto 0);
 
-    --signal writeback_addr   : std_logic_vector (addr_width-1 downto 0);
     signal fetch_addr   : std_logic_vector (addr_width-1 downto 0);
-    signal DataInEnable : std_logic := '0';
-    
+    signal fetch_finished : std_logic;
 
+    signal writeback_addr   : std_logic_vector (addr_width-1 downto 0);
+    signal writeback_finished : std_logic;
+
+    signal DataInEnable : std_logic := '0';
+
+    signal cache_addr_in : std_logic_vector (addr_width-1 downto 0);
+
+    alias tag_address   is cache_addr_in(addr_width-1 downto offset_width + index_width);
+    alias line_index    is cache_addr_in(offset_width + index_width-1 downto offset_width);
+    alias line_offset   is cache_addr_in(offset_width-1 downto 0);
+    
     
 begin
     state_out <= state;
@@ -136,68 +141,78 @@ begin
             end if;
 
         elsif state = STATE_READ then
-            if stored_tag /= tag_address then
+            if oE = '0' then
+                state_next <= STATE_IDLE; --read location is cached              
+            elsif stored_tag /= tag_address then
                 state_next <= STATE_FETCH;
-            elsif oE = '1' then
-                state_next <= STATE_READ;
             else
-                state_next <= STATE_IDLE; --read location is cached                
+                state_next <= STATE_READ;
             end if;
+
         elsif state = STATE_FETCH then
-            --DataInEnable <= '1';
-            --if stored_tag = tag_address then
-            --    state_next <= STATE_IDLE;               -- better fetch finishing conditoin than a hit?
-            --else                                          -- CANT use hit 
-            --    state_next <= STATE_FETCH;
-            --end if;
-            state_next <= STATE_IDLE;
-        elsif state = STATE_WRITE then
-            --writeback_addr <= cpuAddr; 
-            --state_next <= STATE_WRITEBACK;
-            if WnR = '0' then
+            DataInEnable <= '1';
+            if fetch_finished = '1' then 
                 DataInEnable <= '0';
                 state_next <= STATE_IDLE;
             else
-                state_next <= STATE_WRITE;
+                state_next <= STATE_FETCH;
             end if;
+
+        elsif state = STATE_WRITE then
+            writeback_addr <= cpuAddr;
+            state_next <= STATE_WRITEBACK;
+            --if WnR = '0' then
+            --    DataInEnable <= '0';
+            --    state_next <= STATE_IDLE;
+            --else
+            --    state_next <= STATE_WRITE;
+            --end if;
+
         elsif state = STATE_WRITEBACK then
-            if stored_tag = tag_address then        -- Mmmmmm
+            if writeback_finished = '1' then
                 state_next <= STATE_IDLE;
+                --state_next <= STATE_FETCH;
             else
                 state_next <= STATE_WRITEBACK;
             end if;
+
         else
-            state_next <= state;
+            state_next <= STATE_IDLE;
         end if;
 
         -- moore outputs
         if state = STATE_IDLE then
             busy <= '0';
             cpuData <= (others => 'Z');
+            cache_addr_in <= cpuAddr;
             word_in <= cpuData;
             memAddr <= (others => 'Z');
             memData <= (others => 'Z');
             memOE <= '0';
             memnWE <= '1';          
-        else
+        elsif state = STATE_READ then
             busy <= '1';
-            if state = STATE_READ then
-                cpuData <= stored_word;
-            --elsif state = STATE_WRITE then
-            elsif state = STATE_FETCH then -- missed read
-            --if state = STATE_FETCH then
-                word_in <= memData;
-                cpuData <= (others => 'Z');
-                memAddr <= fetch_addr;
-                memOE <= '1';
-                memnWE <= '1';
-            --elsif state = STATE_WRITEBACK then
-            --    memData <= stored_word;
-            --    memAddr <= writeback_addr;
-            --    memOE <= '0';
-            --    memnWE <= '0';
-            end if;
-
+            cpuData <= stored_word;
+            cache_addr_in <= cpuAddr;
+        elsif state = STATE_WRITE then
+            busy <= '1';
+            cache_addr_in <= cpuAddr;
+        elsif state = STATE_FETCH then -- missed read
+            busy <= '1';
+            fetch_addr(addr_width-1 downto offset_width) <= cpuAddr;
+            word_in <= memData;
+            cpuData <= (others => 'Z');
+            memAddr <= fetch_addr;
+            cache_addr_in <= fetch_addr;
+            memOE <= '1';
+            memnWE <= '1';
+        elsif state = STATE_WRITEBACK then
+            cache_addr_in <= writeback_addr;
+            cpuData <= (others => 'Z');
+            memData <= stored_word;
+            memAddr <= writeback_addr;
+            memOE <= '0';
+            memnWE <= '0';
         end if;
 
         -- state transition
@@ -207,43 +222,40 @@ begin
     end process;
 
 
-    --bidir_control : process (cpuData, cpuAddr, clock, WnR, oE)
-    --begin
-    --    if (oE = '1' and WnR = '0') then
-    --        cpuData <= stored_word;     -- output stored word
-    --    else
-    --        cpuData <= (others => 'Z'); -- disable output   
-    --    end if;
-    --    word_in <= cpuData; 
-    --end process;
-
-    -- TODO grab requested element with fetche
-    -- THEN set it up to grab the whole block
-
-
-    --FETCHER : proccess
-    --begin
-    --    -- if state = STATE_FETCH
-    --    -- fetech memory block from main memory
-    --    -- for offset in range 0 - 2**offset width:
-    --    --     fetch_addr <= fetch_tag + fetch_line + offset
+    WRITEBACK: process
+        variable counter : integer;
+    begin
+        writeback_finished <= '0';
+        wait until state'event and state = STATE_WRITEBACK;
+        for counter in 0 to 1 loop
+            wait until rising_edge(clock);
+        end loop;
+        writeback_finished <= '1';
+        wait until state'event and state = STATE_IDLE;
+    end process;
 
 
-    --    -- write tag into directory
-    --end process;
-
-    --control bidir data busy           -- make this state dependant?
-
+    FETCHER: process
+      variable counter  : integer;
+    begin
+        fetch_finished <= '0';
+        wait until state'event and state = STATE_FETCH;
+        for counter in 0 TO 2**offset_width-1 loop
+            fetch_addr(offset_width-1 downto 0) <= std_logic_vector(to_unsigned(counter, offset_width));
+            wait until rising_edge(clock);  
+        end loop;
+        fetch_finished <= '1';
+        wait until state'event and state = STATE_IDLE;
+    end process;
 
 
     tag_comparator: process(tag_address, stored_tag)
     begin
         if (tag_address = stored_tag) then
             hit <= '1';
-            memAddr <= (others => 'Z');
+            --memAddr <= (others => 'Z');
         else
             hit <= '0';
-
         end if;
     end process;
 
@@ -259,7 +271,7 @@ begin
     (
         DataInEnable => DataInEnable,
         DataIn => word_in,
-        Address => cpuAddr(offset_width + index_width-1 downto 0), -- line index and offset
+        Address => cache_addr_in(index_width+offset_width-1 downto 0), -- line index and offset
         DataOut => stored_word, 
         clock => clock,
         reset => reset
