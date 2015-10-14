@@ -3,6 +3,7 @@ net "RX" loc = "U6";
 net "RESET" loc = "B18";
 net "CLOCK" loc = "B8";
 
+#hugo
 
 #net "BT1" loc = "D18";
 #net "BT2" loc = "E18";
