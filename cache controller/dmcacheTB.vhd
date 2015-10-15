@@ -157,74 +157,133 @@ BEGIN
       wait for clk_period*3;
 
       -- insert stimulus here 
-      
-
 
       WnR <= '1';
-
       --cpuAddr <= "11111111";
       --cpuAddr <= "00000001";
       cpuAddr <= "10001000";
       cpuData <= "11111110";
-      wait for clk_period*2;
+      wait until hit = '1';
       WnR <= '0';
+      cpuData <= "ZZZZZZZZ";
 
-      wait for clk_period*12;
-
+      wait until busy = '0';
       WnR <= '1';
       --cpuAddr <= "00000010";
       cpuAddr <= "01000001";
       cpuData <= "11111101";
-      wait for clk_period*2;
+      wait until hit = '1';
       WnR <= '0';
+      cpuData <= "ZZZZZZZZ";
 
-      wait for clk_period*12;
-
+      wait until busy = '0';
       WnR <= '1';
       --cpuAddr <= "00000011";
       cpuAddr <= "10000110";
       cpuData <= "11111011";
-      wait for clk_period*2;
+      wait until hit = '1';
       WnR <= '0';
-
-      wait for clk_period*12;
-
-      WnR <= '0';
-      oE <= '1' ; 
       cpuData <= "ZZZZZZZZ";
       --cpuData <= "--------";
-      wait for clk_period*6;
+      wait until busy = '0';
 
 
       -- go back and look at the cached locations
-
+      oE <= '1' ; 
       --cpuAddr <= "00000001";
       cpuAddr <= "10001000";
-      wait for clk_period*6;
+
+
+    wait for clk_period*3;	  
+
+	  oE <= '0';
+	  wait for clk_period;
+	  oE <= '1';
 
       --cpuAddr <= "00000010";
       cpuAddr <= "01000001";
-      wait for clk_period*6;
+
+    wait for clk_period*3;    
+	  oE <= '0';
+	  wait for clk_period;
+	  oE <= '1';
+
 
       --cpuAddr <= "00000011";
-      cpuAddr <= "10000110";
-      wait for clk_period*6;
+    cpuAddr <= "10000110";
 
 
+    wait for clk_period*3;    
+ 	oE <= '0';
+  	wait for clk_period;
+  	oE <= '1';
 
-      -- look at some uncached locations
 
-      cpuAddr <= "11101111";
-      wait for clk_period*12;
+    -- look at some uncached locations
 
-      cpuAddr <= "01001000";
-      wait for clk_period*12; 
 
-      cpuAddr <= "10000011";
-      wait for clk_period*12;
+    wait for clk_period*3;
 
-      oE <= '0';
-      cpuAddr <= "00000000";
+
+    oE <= '0';
+    wait for clk_period;
+    oE <= '1';
+
+    cpuAddr <= "01001000";
+
+
+    wait for clk_period*3;
+    wait until hit = '1';    
+	oE <= '0';
+	wait for clk_period;
+	oE <= '1';
+
+    cpuAddr <= "10000011";
+
+
+    wait for clk_period*3;
+    wait until hit = '1'; 
+
+    -- done   
+
+    oE <= '0';
+    cpuAddr <= "00000000";
+
+    wait for 100 ns;
+
+    reset <= '1';
+    wait for 100 ns;
+    reset <= '0';
+
+
+      -- --write to a memory location, write over it in cache, read origional location (do a fetch)
+      --WnR <= '1';
+      --cpuAddr <= "10000000";
+      --cpuData <= "10101010";
+      --wait for 20 ns;
+      --WnR <= '0';
+
+      --wait for 50 ns;
+
+      --WnR <= '1';
+      --cpuAddr <= "01000000";
+      --cpuData <= "11110000";
+      --wait for 20 ns;
+      --WnR <= '0';
+      
+
+      --wait for 50 ns;
+
+
+      --oE <= '1';
+      --cpuAddr <= "10000000";
+      --cpuData <= (others => 'Z');
+
+      --wait for clk_period*18;
+
+      --oE <= '0';
+      --cpuAddr <= "00000000";
+
 
 
       wait;

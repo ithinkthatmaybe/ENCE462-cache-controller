@@ -115,6 +115,7 @@ architecture Behavioral of dmcache is
     signal writeback_finished : std_logic;
 
     signal DataInEnable : std_logic := '0';
+    signal tagDataInEnable : std_logic := '0';
 
     signal cache_addr_in : std_logic_vector (addr_width-1 downto 0);
 
@@ -126,10 +127,11 @@ architecture Behavioral of dmcache is
 begin
     state_out <= state;
 
-    cache_control : process(WnR, oE, clock)
+    cache_control : process(WnR, oE, clock, state)
     begin
         -- state transition logic
         if state = STATE_IDLE then
+            tagDataInEnable <= DataInEnable;
             DataInEnable <= '0';
             if WnR = '0' and oE = '1' then 
                 state_next <= STATE_READ;
@@ -141,19 +143,25 @@ begin
             end if;
 
         elsif state = STATE_READ then
+            DataInEnable <= '0';
             if oE = '0' then
                 state_next <= STATE_IDLE; --read location is cached              
             elsif stored_tag /= tag_address then
+                fetch_addr(addr_width-1 downto offset_width) <= cpuAddr;
+                tagDataInEnable <= '0';
+                DataInEnable <= '1';
                 state_next <= STATE_FETCH;
             else
                 state_next <= STATE_READ;
             end if;
 
         elsif state = STATE_FETCH then
+  -- dont write the tag until the fetch is finished
             DataInEnable <= '1';
             if fetch_finished = '1' then 
-                DataInEnable <= '0';
-                state_next <= STATE_IDLE;
+                --DataInEnable <= '0';          -- REMOVED, check for bugs
+                tagDataInEnable <= DataInEnable;
+                state_next <= STATE_READ;
             else
                 state_next <= STATE_FETCH;
             end if;
@@ -170,8 +178,10 @@ begin
 
         elsif state = STATE_WRITEBACK then
             if writeback_finished = '1' then
-                state_next <= STATE_IDLE;
+                --fetch_addr(addr_width-1 downto offset_width) <= cpuAddr;
                 --state_next <= STATE_FETCH;
+                state_next <= STATE_IDLE;
+
             else
                 state_next <= STATE_WRITEBACK;
             end if;
@@ -191,6 +201,10 @@ begin
             memOE <= '0';
             memnWE <= '1';          
         elsif state = STATE_READ then
+            memAddr <= (others => 'Z');
+            memData <= (others => 'Z');
+            memOE <= '0';
+            memnWE <= '1'; 
             busy <= '1';
             cpuData <= stored_word;
             cache_addr_in <= cpuAddr;
@@ -199,9 +213,9 @@ begin
             cache_addr_in <= cpuAddr;
         elsif state = STATE_FETCH then -- missed read
             busy <= '1';
-            fetch_addr(addr_width-1 downto offset_width) <= cpuAddr;
             word_in <= memData;
             cpuData <= (others => 'Z');
+            memData <= (others => 'Z');
             memAddr <= fetch_addr;
             cache_addr_in <= fetch_addr;
             memOE <= '1';
@@ -242,10 +256,11 @@ begin
         wait until state'event and state = STATE_FETCH;
         for counter in 0 TO 2**offset_width-1 loop
             fetch_addr(offset_width-1 downto 0) <= std_logic_vector(to_unsigned(counter, offset_width));
-            wait until rising_edge(clock);  
+            wait until rising_edge(clock);
+            wait until rising_edge(clock);
         end loop;
         fetch_finished <= '1';
-        wait until state'event and state = STATE_IDLE;
+        wait until state'event and state = STATE_READ;
     end process;
 
 
@@ -286,7 +301,7 @@ begin
     )
     port map
     (
-        DataInEnable => DataInEnable,
+        DataInEnable => tagDataInEnable,
         DataIn => tag_address,      
         Address => line_index,
         DataOut => stored_tag,

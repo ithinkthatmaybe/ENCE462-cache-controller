@@ -149,13 +149,6 @@ architecture Behavioral of top_controller is
     signal memOE  : std_logic;
     signal memnWE : std_logic; 
 
-
-
-
-
-
-
-
     ----------------------------------------------------------------------------
     -- Component declarations
     ----------------------------------------------------------------------------

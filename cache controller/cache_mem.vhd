@@ -61,7 +61,7 @@ begin
   begin
 	if reset = '1' then
 	    for counter in 0 TO Size-1 loop
-		  mem(counter) <= (others => 'U');
+		  mem(counter) <= (others => '0');
 		end loop;
     elsif clock'event and clock = '1' then
 	   if DataInEnable = '1' then
