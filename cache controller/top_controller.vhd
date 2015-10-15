@@ -37,7 +37,7 @@ entity top_controller is
     (  
   --      -- General
   --      CLOCK                  		  : in      std_logic;
-        RESET                  		  : in      std_logic;    
+        --RESET                  		  : in      std_logic;    
   --      RX                     		  : in      std_logic;
   --      TX                     		  : out     std_logic;
 
@@ -71,6 +71,7 @@ architecture Behavioral of top_controller is
 
     -- SIMULATOIN SIGNALS
     signal CLOCK : std_logic;
+    signal RESET : std_logic;
 
 
 
@@ -429,8 +430,9 @@ begin
     uart_data_out_stb <= '0';
     uart_data_in_ack <= '0';
 
-
-    wait for 50 ns;
+    reset <= '1';
+    wait for 100 ns;
+    reset <= '0';
 
     -- do a read
 
@@ -442,15 +444,13 @@ begin
     wait for 50 ns;
 
 
-    uart_data_out <= "00000010";
+    uart_data_out <= "10000010";
     uart_data_out_stb <= '1';
     wait for 20 ns;
     uart_data_out_stb <= '0';
 
-    wait for 50 ns;
-
     wait until uart_data_in_stb = '1';
-    wait for 10 ns;
+
     uart_data_in_ack <= '1';
 
     wait for 100 ns;
