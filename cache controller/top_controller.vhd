@@ -36,10 +36,10 @@ entity top_controller is
     port 
     (  
   --      -- General
-  --      CLOCK                  		  : in      std_logic;
-        --RESET                  		  : in      std_logic;    
-  --      RX                     		  : in      std_logic;
-  --      TX                     		  : out     std_logic;
+        CLOCK                  		  : in      std_logic;
+        RESET                  		  : in      std_logic;    
+        RX                     		  : in      std_logic;
+        TX                     		  : out     std_logic;
 
         --BT0 						  : in std_logic;
 		--BT1 						  : in std_logic;
@@ -69,9 +69,9 @@ end top_controller;
 
 architecture Behavioral of top_controller is
 
-    -- SIMULATOIN SIGNALS
-    signal CLOCK : std_logic;
-    signal RESET : std_logic;
+    ---- SIMULATOIN SIGNALS
+    --signal CLOCK : std_logic;
+    --signal RESET : std_logic;
 
 
 
@@ -167,24 +167,24 @@ architecture Behavioral of top_controller is
     ----------------------------------------------------------------------------
     -- Component declarations
     ----------------------------------------------------------------------------
-    --component UART is
-    --    generic (
-    --            BAUD_RATE           : positive;
-    --            CLOCK_FREQUENCY     : positive
-    --        );
-    --    port (  -- General
-    --            CLOCK               :   in      std_logic;
-    --            RESET               :   in      std_logic;    
-    --            DATA_STREAM_IN      :   in      std_logic_vector(7 downto 0);  -- TO PC
-    --            DATA_STREAM_IN_STB  :   in      std_logic;
-    --            DATA_STREAM_IN_ACK  :   out     std_logic;
-    --            DATA_STREAM_OUT     :   out     std_logic_vector(7 downto 0);  -- from PC
-    --            DATA_STREAM_OUT_STB :   out     std_logic;
-    --            DATA_STREAM_OUT_ACK :   in      std_logic;
-    --            TX                  :   out     std_logic;
-    --            RX                  :   in      std_logic
-    --         );
-    --end component UART;
+    component UART is
+        generic (
+                BAUD_RATE           : positive;
+                CLOCK_FREQUENCY     : positive
+            );
+        port (  -- General
+                CLOCK               :   in      std_logic;
+                RESET               :   in      std_logic;    
+                DATA_STREAM_IN      :   in      std_logic_vector(7 downto 0);  -- TO PC
+                DATA_STREAM_IN_STB  :   in      std_logic;
+                DATA_STREAM_IN_ACK  :   out     std_logic;
+                DATA_STREAM_OUT     :   out     std_logic_vector(7 downto 0);  -- from PC
+                DATA_STREAM_OUT_STB :   out     std_logic;
+                DATA_STREAM_OUT_ACK :   in      std_logic;
+                TX                  :   out     std_logic;
+                RX                  :   in      std_logic
+             );
+    end component UART;
 
   
 
@@ -262,24 +262,24 @@ begin
 
 
 
-    --UART_inst1 : UART
-    --generic map (
-    --        BAUD_RATE           => BAUD_RATE,
-    --        CLOCK_FREQUENCY     => CLOCK_FREQUENCY
-    --)
-    --port map    (  
-    --        -- General
-    --        CLOCK               => CLOCK,
-    --        RESET               => RESET,
-    --        DATA_STREAM_IN      => uart_data_in,
-    --        DATA_STREAM_IN_STB  => uart_data_in_stb,
-    --        DATA_STREAM_IN_ACK  => uart_data_in_ack,
-    --        DATA_STREAM_OUT     => uart_data_out,
-    --        DATA_STREAM_OUT_STB => uart_data_out_stb,
-    --        DATA_STREAM_OUT_ACK => uart_data_out_ack,
-    --        TX                  => TX,
-    --        RX                  => RX
-    --);
+    UART_inst1 : UART
+    generic map (
+            BAUD_RATE           => BAUD_RATE,
+            CLOCK_FREQUENCY     => CLOCK_FREQUENCY
+    )
+    port map    (  
+            -- General
+            CLOCK               => CLOCK,
+            RESET               => RESET,
+            DATA_STREAM_IN      => uart_data_in,
+            DATA_STREAM_IN_STB  => uart_data_in_stb,
+            DATA_STREAM_IN_ACK  => uart_data_in_ack,
+            DATA_STREAM_OUT     => uart_data_out,
+            DATA_STREAM_OUT_STB => uart_data_out_stb,
+            DATA_STREAM_OUT_ACK => uart_data_out_ack,
+            TX                  => TX,
+            RX                  => RX
+    );
 
 
 	S <= (	7 => SW7,
@@ -424,265 +424,265 @@ begin
 
 
 
-    STIMULUS : process
-    begin
+   -- STIMULUS : process
+   -- begin
 
-    uart_data_out_stb <= '0';
-    uart_data_in_ack <= '0';
+   -- uart_data_out_stb <= '0';
+   -- uart_data_in_ack <= '0';
 
-    reset <= '1';
-    wait for 100 ns;
-    reset <= '0';
+   -- reset <= '1';
+   -- wait for 100 ns;
+   -- reset <= '0';
 
-    -- do a read
+   -- -- do a read
 
-    uart_data_out <= "01000000";
-    uart_data_out_stb <= '1';
-    wait for 20 ns;
-    uart_data_out_stb <= '0';
+   -- uart_data_out <= "01000000";
+   -- uart_data_out_stb <= '1';
+   -- wait for 20 ns;
+   -- uart_data_out_stb <= '0';
 
-    wait for 50 ns;
+   -- wait for 50 ns;
 
 
-    uart_data_out <= "10000010";
-    uart_data_out_stb <= '1';
-    wait for 20 ns;
-    uart_data_out_stb <= '0';
+   -- uart_data_out <= "10000010";
+   -- uart_data_out_stb <= '1';
+   -- wait for 20 ns;
+   -- uart_data_out_stb <= '0';
 
-    wait until uart_data_in_stb = '1';
+   -- wait until uart_data_in_stb = '1';
 
-    uart_data_in_ack <= '1';
+   -- uart_data_in_ack <= '1';
 
-    wait for 100 ns;
+   -- wait for 100 ns;
 
-    uart_data_in_ack <= '0';
+   -- uart_data_in_ack <= '0';
 
 
-    -- WRITE
+   -- -- WRITE
 
 
 
-    uart_data_out <= "00000000";
-    uart_data_out_stb <= '1';
-    wait for 20 ns;
-    uart_data_out_stb <= '0';
+   -- uart_data_out <= "00000000";
+   -- uart_data_out_stb <= '1';
+   -- wait for 20 ns;
+   -- uart_data_out_stb <= '0';
 
-    wait for 50 ns;
+   -- wait for 50 ns;
 
 
-    uart_data_out <= "00000010";
-    uart_data_out_stb <= '1';
-    wait for 20 ns;
-    uart_data_out_stb <= '0';
+   -- uart_data_out <= "00000010";
+   -- uart_data_out_stb <= '1';
+   -- wait for 20 ns;
+   -- uart_data_out_stb <= '0';
 
-    wait for 50 ns;
+   -- wait for 50 ns;
 
-    uart_data_out <= "11111111";
-    uart_data_out_stb <= '1';
-    wait for 20 ns;
-    uart_data_out_stb <= '0';
+   -- uart_data_out <= "11111111";
+   -- uart_data_out_stb <= '1';
+   -- wait for 20 ns;
+   -- uart_data_out_stb <= '0';
 
-    wait for 50 ns;
+   -- wait for 50 ns;
 
 
 
-    -- WRITE
+   -- -- WRITE
 
-    wait for 100 ns;
+   -- wait for 100 ns;
 
 
-    uart_data_out <= "00000000";
-    uart_data_out_stb <= '1';
-    wait for 20 ns;
-    uart_data_out_stb <= '0';
+   -- uart_data_out <= "00000000";
+   -- uart_data_out_stb <= '1';
+   -- wait for 20 ns;
+   -- uart_data_out_stb <= '0';
 
-    wait for 50 ns;
+   -- wait for 50 ns;
 
 
-    uart_data_out <= "00000011";
-    uart_data_out_stb <= '1';
-    wait for 20 ns;
-    uart_data_out_stb <= '0';
+   -- uart_data_out <= "00000011";
+   -- uart_data_out_stb <= '1';
+   -- wait for 20 ns;
+   -- uart_data_out_stb <= '0';
 
-    wait for 50 ns;
+   -- wait for 50 ns;
 
-    uart_data_out <= "10101010";
-    uart_data_out_stb <= '1';
-    wait for 20 ns;
-    uart_data_out_stb <= '0';
+   -- uart_data_out <= "10101010";
+   -- uart_data_out_stb <= '1';
+   -- wait for 20 ns;
+   -- uart_data_out_stb <= '0';
 
-    wait for 50 ns;
+   -- wait for 50 ns;
 
 
-    -- WRITE
+   -- -- WRITE
 
-    wait for 100 ns;
+   -- wait for 100 ns;
 
 
-    uart_data_out <= "00000000";
-    uart_data_out_stb <= '1';
-    wait for 20 ns;
-    uart_data_out_stb <= '0';
+   -- uart_data_out <= "00000000";
+   -- uart_data_out_stb <= '1';
+   -- wait for 20 ns;
+   -- uart_data_out_stb <= '0';
 
-    wait for 50 ns;
+   -- wait for 50 ns;
 
 
-    uart_data_out <= "00000100";
-    uart_data_out_stb <= '1';
-    wait for 20 ns;
-    uart_data_out_stb <= '0';
+   -- uart_data_out <= "00000100";
+   -- uart_data_out_stb <= '1';
+   -- wait for 20 ns;
+   -- uart_data_out_stb <= '0';
 
-    wait for 50 ns;
+   -- wait for 50 ns;
 
-    uart_data_out <= "11110000";
-    uart_data_out_stb <= '1';
-    wait for 20 ns;
-    uart_data_out_stb <= '0';
+   -- uart_data_out <= "11110000";
+   -- uart_data_out_stb <= '1';
+   -- wait for 20 ns;
+   -- uart_data_out_stb <= '0';
 
-    wait for 250 ns;
+   -- wait for 250 ns;
 
-    -- do a read
+   -- -- do a read
 
-    uart_data_out <= "01000000";
-    uart_data_out_stb <= '1';
-    wait for 20 ns;
-    uart_data_out_stb <= '0';
+   -- uart_data_out <= "01000000";
+   -- uart_data_out_stb <= '1';
+   -- wait for 20 ns;
+   -- uart_data_out_stb <= '0';
 
-    wait for 50 ns;
+   -- wait for 50 ns;
 
 
-    uart_data_out <= "00000011";
-    uart_data_out_stb <= '1';
-    wait for 20 ns;
-    uart_data_out_stb <= '0';
+   -- uart_data_out <= "00000011";
+   -- uart_data_out_stb <= '1';
+   -- wait for 20 ns;
+   -- uart_data_out_stb <= '0';
 
-    wait until uart_data_in_stb = '1';
-    wait for 10 ns;
-    uart_data_in_ack <= '1';
+   -- wait until uart_data_in_stb = '1';
+   -- wait for 10 ns;
+   -- uart_data_in_ack <= '1';
 
-    Wait for 100 ns;
+   -- Wait for 100 ns;
 
-    uart_data_in_ack <= '0';
+   -- uart_data_in_ack <= '0';
 
-    -- do a read
+   -- -- do a read
 
-    uart_data_out <= "01000000";
-    uart_data_out_stb <= '1';
-    wait for 20 ns;
-    uart_data_out_stb <= '0';
+   -- uart_data_out <= "01000000";
+   -- uart_data_out_stb <= '1';
+   -- wait for 20 ns;
+   -- uart_data_out_stb <= '0';
 
-    wait for 50 ns;
+   -- wait for 50 ns;
 
 
-    uart_data_out <= "00000100";
-    uart_data_out_stb <= '1';
-    wait for 20 ns;
-    uart_data_out_stb <= '0';
+   -- uart_data_out <= "00000100";
+   -- uart_data_out_stb <= '1';
+   -- wait for 20 ns;
+   -- uart_data_out_stb <= '0';
 
-    wait until uart_data_in_stb = '1';
-    wait for 10 ns;
-    uart_data_in_ack <= '1';
+   -- wait until uart_data_in_stb = '1';
+   -- wait for 10 ns;
+   -- uart_data_in_ack <= '1';
 
-    Wait for 100 ns;
+   -- Wait for 100 ns;
 
-    uart_data_in_ack <= '0';
+   -- uart_data_in_ack <= '0';
 
 
 
 
 
-        -- WRITE to A LOCATION
+   --     -- WRITE to A LOCATION
 
-    wait for 100 ns;
+   -- wait for 100 ns;
 
 
-    uart_data_out <= "00000000";
-    uart_data_out_stb <= '1';
-    wait for 20 ns;
-    uart_data_out_stb <= '0';
+   -- uart_data_out <= "00000000";
+   -- uart_data_out_stb <= '1';
+   -- wait for 20 ns;
+   -- uart_data_out_stb <= '0';
 
-    wait for 50 ns;
+   -- wait for 50 ns;
 
 
-    uart_data_out <= "00000111";
-    uart_data_out_stb <= '1';
-    wait for 20 ns;
-    uart_data_out_stb <= '0';
+   -- uart_data_out <= "00000111";
+   -- uart_data_out_stb <= '1';
+   -- wait for 20 ns;
+   -- uart_data_out_stb <= '0';
 
-    wait for 50 ns;
+   -- wait for 50 ns;
 
-    uart_data_out <= "10101010";
-    uart_data_out_stb <= '1';
-    wait for 20 ns;
-    uart_data_out_stb <= '0';
+   -- uart_data_out <= "10101010";
+   -- uart_data_out_stb <= '1';
+   -- wait for 20 ns;
+   -- uart_data_out_stb <= '0';
 
-    wait for 50 ns;
+   -- wait for 50 ns;
 
 
-    -- WRITE OVER THAT LOCATION IN CACHE
+   -- -- WRITE OVER THAT LOCATION IN CACHE
 
-    wait for 100 ns;
+   -- wait for 100 ns;
 
 
-    uart_data_out <= "00000000";
-    uart_data_out_stb <= '1';
-    wait for 20 ns;
-    uart_data_out_stb <= '0';
+   -- uart_data_out <= "00000000";
+   -- uart_data_out_stb <= '1';
+   -- wait for 20 ns;
+   -- uart_data_out_stb <= '0';
 
-    wait for 50 ns;
+   -- wait for 50 ns;
 
 
-    uart_data_out <= "11000111";
-    uart_data_out_stb <= '1';
-    wait for 20 ns;
-    uart_data_out_stb <= '0';
+   -- uart_data_out <= "11000111";
+   -- uart_data_out_stb <= '1';
+   -- wait for 20 ns;
+   -- uart_data_out_stb <= '0';
 
-    wait for 50 ns;
+   -- wait for 50 ns;
 
-    uart_data_out <= "11110000";
-    uart_data_out_stb <= '1';
-    wait for 20 ns;
-    uart_data_out_stb <= '0';
+   -- uart_data_out <= "11110000";
+   -- uart_data_out_stb <= '1';
+   -- wait for 20 ns;
+   -- uart_data_out_stb <= '0';
 
-    wait for 250 ns;
+   -- wait for 250 ns;
 
 
-    -- READ THE ORIGIONAL LOCATION
+   -- -- READ THE ORIGIONAL LOCATION
 
-    uart_data_out <= "01000000";
-    uart_data_out_stb <= '1';
-    wait for 20 ns;
-    uart_data_out_stb <= '0';
+   -- uart_data_out <= "01000000";
+   -- uart_data_out_stb <= '1';
+   -- wait for 20 ns;
+   -- uart_data_out_stb <= '0';
 
-    wait for 50 ns;
+   -- wait for 50 ns;
 
 
-    uart_data_out <= "00000111";
-    uart_data_out_stb <= '1';
-    wait for 20 ns;
-    uart_data_out_stb <= '0';
+   -- uart_data_out <= "00000111";
+   -- uart_data_out_stb <= '1';
+   -- wait for 20 ns;
+   -- uart_data_out_stb <= '0';
 
-    wait until uart_data_in_stb = '1';
-    wait for 10 ns;
-    uart_data_in_ack <= '1';
+   -- wait until uart_data_in_stb = '1';
+   -- wait for 10 ns;
+   -- uart_data_in_ack <= '1';
 
-    Wait for 100 ns;
+   -- Wait for 100 ns;
 
-    uart_data_in_ack <= '0';
+   -- uart_data_in_ack <= '0';
 
 
 
-    wait;
-    end process;
+   -- wait;
+   -- end process;
 
-   clk_process :process
-        constant clk_period : time := 20 ns;
-   begin
-        CLOCK <= '0';
-        wait for clk_period/2;
-        CLOCK <= '1';
-        wait for clk_period/2;
-   end process;
+   --clk_process :process
+   --     constant clk_period : time := 20 ns;
+   --begin
+   --     CLOCK <= '0';
+   --     wait for clk_period/2;
+   --     CLOCK <= '1';
+   --     wait for clk_period/2;
+   --end process;
 
 
 

@@ -151,7 +151,9 @@ begin
                 fetch_addr(addr_width-1 downto offset_width) <= cpuAddr;
                 tagDataInEnable <= '0';
                 DataInEnable <= '1';
-                state_next <= STATE_FETCH;
+                --state_next <= STATE_FETCH;
+                state_next <= STATE_IDLE;
+                tagDataInEnable <= '1';
             else
                 state_next <= STATE_READ;
             end if;
@@ -168,7 +170,8 @@ begin
             end if;
 
         elsif state = STATE_WRITE then
-            state_next <= STATE_WRITEBACK;
+            --state_next <= STATE_WRITEBACK;
+            state_next <= STATE_IDLE;
             --if WnR = '0' then
             --    DataInEnable <= '0';
             --    state_next <= STATE_IDLE;
@@ -211,22 +214,22 @@ begin
         elsif state = STATE_WRITE then
             busy <= '1';
             cache_addr_in <= cpuAddr;
-        elsif state = STATE_FETCH then -- missed read
-            busy <= '1';
-            word_in <= memData;
-            cpuData <= (others => 'Z');
-            memData <= (others => 'Z');
-            memAddr <= fetch_addr;
-            cache_addr_in <= fetch_addr;
-            memOE <= '1';
-            memnWE <= '1';
-        elsif state = STATE_WRITEBACK then
-            cache_addr_in <= writeback_addr;
-            cpuData <= (others => 'Z');
-            memData <= stored_word;
-            memAddr <= writeback_addr;
-            memOE <= '0';
-            memnWE <= '0';
+        --elsif state = STATE_FETCH then -- missed read
+        --    busy <= '1';
+        --    word_in <= memData;
+        --    cpuData <= (others => 'Z');
+        --    memData <= (others => 'Z');
+        --    memAddr <= fetch_addr;
+        --    cache_addr_in <= fetch_addr;
+        --    memOE <= '1';
+        --    memnWE <= '1';
+        --elsif state = STATE_WRITEBACK then
+        --    cache_addr_in <= writeback_addr;
+        --    cpuData <= (others => 'Z');
+        --    memData <= stored_word;
+        --    memAddr <= writeback_addr;
+        --    memOE <= '0';
+        --    memnWE <= '0';
         end if;
 
         -- state transition
@@ -236,32 +239,32 @@ begin
     end process;
 
 
-    WRITEBACK: process
-        variable counter : integer;
-    begin
-        writeback_finished <= '0';
-        wait until state'event and state = STATE_WRITEBACK;
-        for counter in 0 to 1 loop
-            wait until rising_edge(clock);
-        end loop;
-        writeback_finished <= '1';
-        wait until state'event and state = STATE_IDLE;
-    end process;
+    --WRITEBACK: process
+    --    variable counter : integer;
+    --begin
+    --    writeback_finished <= '0';
+    --    wait until state'event and state = STATE_WRITEBACK;
+    --    for counter in 0 to 1 loop
+    --        wait until rising_edge(clock);
+    --    end loop;
+    --    writeback_finished <= '1';
+    --    wait until state'event and state = STATE_IDLE;
+    --end process;
 
 
-    FETCHER: process
-      variable counter  : integer;
-    begin
-        fetch_finished <= '0';
-        wait until state'event and state = STATE_FETCH;
-        for counter in 0 TO 2**offset_width-1 loop
-            fetch_addr(offset_width-1 downto 0) <= std_logic_vector(to_unsigned(counter, offset_width));
-            wait until rising_edge(clock);
-            wait until rising_edge(clock);
-        end loop;
-        fetch_finished <= '1';
-        wait until state'event and state = STATE_READ;
-    end process;
+    --FETCHER: process
+    --  variable counter  : integer;
+    --begin
+    --    fetch_finished <= '0';
+    --    wait until state'event and state = STATE_FETCH;
+    --    for counter in 0 TO 2**offset_width-1 loop
+    --        fetch_addr(offset_width-1 downto 0) <= std_logic_vector(to_unsigned(counter, offset_width));
+    --        wait until rising_edge(clock);
+    --        wait until rising_edge(clock);
+    --    end loop;
+    --    fetch_finished <= '1';
+    --    wait until state'event and state = STATE_READ;
+    --end process;
 
 
     tag_comparator: process(tag_address, stored_tag)
