@@ -136,6 +136,7 @@ begin
             if WnR = '0' and oE = '1' then 
                 state_next <= STATE_READ;
             elsif WnR = '1' and oE = '0' then
+                writeback_addr <= cpuAddr;
                 state_next <= STATE_WRITE;
                 DataInEnable <= '1';        
             else
@@ -167,7 +168,6 @@ begin
             end if;
 
         elsif state = STATE_WRITE then
-            writeback_addr <= cpuAddr;
             state_next <= STATE_WRITEBACK;
             --if WnR = '0' then
             --    DataInEnable <= '0';
